@@ -43,10 +43,11 @@ actual fun DropDownView(
     modifier: Modifier,
     expanded: Boolean,
     listItems: List<String>,
-    selectedItem: String
-):Pair<Boolean,String> {
+    selectedItem: String,
+    onItemSelected: (picked: String) -> Unit
+) {
     var isDropDownExpanded  by remember { mutableStateOf(expanded)}
-    var selectedItem by remember { mutableStateOf(selectedItem) }
+    var mutableSelectedItem by remember { mutableStateOf(selectedItem) }
     var dropDownViewSize by remember{ mutableStateOf(IntSize.Zero) }
 
     Box(
@@ -58,7 +59,7 @@ actual fun DropDownView(
         ClickableText(
             text = buildAnnotatedString {
                     withStyle(SpanStyle(color = Color.Black)) {
-                        append(selectedItem)
+                        append(mutableSelectedItem)
                     }
             },
             onClick = {
@@ -80,15 +81,15 @@ actual fun DropDownView(
     DropdownMenuList(
         options = listItems,
         onSelectedAction = { option ->
-            selectedItem = option
+            mutableSelectedItem = option
             isDropDownExpanded = false
+            onItemSelected(option)
         },
         isDropDownExpanded = isDropDownExpanded,
         onDismissRequest = {isDropDownExpanded = false},
         dropDownViewSize
 
     )
-    return Pair(isDropDownExpanded,selectedItem)
 }
 
 @Composable
@@ -168,9 +169,8 @@ fun PreviewDropdownMenu() {
         modifier = Modifier.fillMaxSize().width(40.dp),
         listItems = listItems,
         selectedItem = "AED",
-        expanded = false
-
-
+        expanded = false,
+        onItemSelected = {}
     )
 }
 

@@ -1,4 +1,6 @@
-package com.moin.currency_converter.data
+package com.moin.currency_converter.presentation
+
+import com.moin.currency_converter.data.Currency
 
 sealed interface CurrencyListState{
     object Loading: CurrencyListState

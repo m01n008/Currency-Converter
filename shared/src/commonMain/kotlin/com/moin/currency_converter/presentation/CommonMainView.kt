@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.moin.currency_converter.domain.CurrencyViewModel
 import com.moin.currency_converter.style.Palette
 import com.squareup.sqldelight.db.SqlDriver
 import dev.tmapps.konnection.Konnection

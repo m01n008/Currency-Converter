@@ -21,11 +21,12 @@ actual fun DropDownView(
     modifier: Modifier,
     expanded: Boolean,
     listItems: List<String>,
-    selectedItem: String
-): Pair<Boolean,String> {
+    selectedItem: String,
+    onItemSelected: (picked: String) -> Unit
+) {
     val contextForToast = LocalContext.current
     var mutableExpanded  by remember { mutableStateOf(expanded) }
-    var selectedItem by remember { mutableStateOf(selectedItem) }
+    var mutableSelectedItem by remember { mutableStateOf(selectedItem) }
     // box
     ExposedDropdownMenuBox(
         expanded = mutableExpanded,
@@ -35,13 +36,13 @@ actual fun DropDownView(
     ) {
         // text field
         TextField(
-            value = selectedItem,
+            value = mutableSelectedItem,
             onValueChange = {},
             readOnly = true,
             label = { Text(text = "currency")},
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(
-                    expanded = expanded
+                    expanded = mutableExpanded
                 )
             },
             colors = ExposedDropdownMenuDefaults.textFieldColors()
@@ -57,14 +58,14 @@ actual fun DropDownView(
             listItems.forEach { selectedOption ->
                 // menu item
                 DropdownMenuItem(onClick = {
-                    selectedItem = selectedOption
+                    mutableSelectedItem = selectedOption
                     Toast.makeText(contextForToast, selectedOption, Toast.LENGTH_SHORT).show()
                     mutableExpanded = false
+                    onItemSelected(selectedOption)
                 }) {
                     Text(text = selectedOption)
                 }
             }
         }
     }
-    return Pair(mutableExpanded,selectedItem)
 }

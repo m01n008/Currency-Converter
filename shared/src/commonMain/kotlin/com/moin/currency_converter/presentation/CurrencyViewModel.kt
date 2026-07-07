@@ -1,36 +1,34 @@
-package com.moin.currency_converter.domain
+package com.moin.currency_converter.presentation
 
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
-import com.moin.currency_converter.CCDatabase
 import com.moin.currency_converter.DateTimeUtil
+import com.moin.currency_converter.CCDatabase
 import com.moin.currency_converter.data.ConvertedCurrency
 import com.moin.currency_converter.data.Currency
-import com.moin.currency_converter.data.CurrencyGridState
-import com.moin.currency_converter.data.CurrencyListState
 import com.moin.currency_converter.data.local.LocalCCDataSourceImpl
 import com.moin.currency_converter.data.local.LocalConvertedCurrency
 import com.moin.currency_converter.data.remote.OpenExchangeAPIImpl
 import com.squareup.sqldelight.db.SqlDriver
 import dev.tmapps.konnection.Konnection
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.JsonObject
+import kotlin.collections.iterator
 import kotlin.math.roundToInt
 
-class CurrencyViewModel(sqlDriver: SqlDriver, konnection: Konnection) {
-    private val viewModelScope = CoroutineScope(Dispatchers.Main)
+class CurrencyViewModel(sqlDriver: SqlDriver, konnection: Konnection) : ViewModel() {
+
     var exchangeAPI = OpenExchangeAPIImpl()
     var localCCDataSource = LocalCCDataSourceImpl(CCDatabase(sqlDriver))
-    val state = MutableStateFlow<CurrencyListState>(CurrencyListState.Loading)
-    val gridState = MutableStateFlow<CurrencyGridState>(CurrencyGridState.Loading)
-
+    val cListState = MutableStateFlow<CurrencyListState>(CurrencyListState.Loading)
+    val cGridState = MutableStateFlow<CurrencyGridState>(CurrencyGridState.Loading)
+    var count = 0;
 
 
     init {
@@ -40,20 +38,21 @@ class CurrencyViewModel(sqlDriver: SqlDriver, konnection: Konnection) {
                 try {
                     val currJsonObj = exchangeAPI.getCurrencies()
                     val currencyList = parseCurrencies(currJsonObj)
-                    state.emit(CurrencyListState.Success(currencyList))
+                    cListState.emit(CurrencyListState.Success(currencyList))
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    state.emit(CurrencyListState.Error(e.message ?: "something went wrong"))
+                    cListState.emit(CurrencyListState.Error(e.message ?: "something went wrong"))
                 }
             }
-            else{
-                state.emit( CurrencyListState.Error("Internet is not connected"))
+            else {
+                cListState.emit( CurrencyListState.Error("Internet is not connected"))
             }
         }
     }
 
 
     fun getLatest(base: String, value: String) {
+        println("getLatest func call: $count times")
         viewModelScope.launch {
             try {
                 val localCCList = localCCDataSource.getAllCCRows()
@@ -66,10 +65,10 @@ class CurrencyViewModel(sqlDriver: SqlDriver, konnection: Konnection) {
                     }
                 }
                 val convCurrencyList = convertCurrencies(localCCList, base, value)
-                gridState.emit(CurrencyGridState.Success(convCurrencyList))
+                cGridState.emit(CurrencyGridState.Success(convCurrencyList))
             } catch (e: Exception) {
                 e.printStackTrace()
-                gridState.emit(CurrencyGridState.Error(e.message ?: "something went wrong"))
+                cGridState.emit(CurrencyGridState.Error(e.message ?: "something went wrong"))
             }
         }
     }
@@ -146,6 +145,9 @@ class CurrencyViewModel(sqlDriver: SqlDriver, konnection: Konnection) {
 
         return convCurrencyList
     }
+
+
+
 
 
 

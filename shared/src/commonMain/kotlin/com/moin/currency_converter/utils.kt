@@ -5,9 +5,6 @@ import com.moin.currency_converter.data.ConvertedCurrency
 import com.moin.currency_converter.data.Currency
 
 
-internal  fun StringtoBooleanStringPair(str: String): Pair<Boolean,String>{
-    return Pair(str.substringBefore(',').removePrefix("(").toBoolean(), str.substringAfter(',').removeSuffix(")").trim() )
-}
 
 internal fun getRandomColor(): Color {
 return Color.Unspecified

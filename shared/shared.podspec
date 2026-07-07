@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'shared'
     spec.version                  = '1.0'
-    spec.homepage                 = 'https://github.com/d1lithium/Currency-Converter'
+    spec.homepage                 = 'https://github.com/m01n008/Currency-Converter'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
     spec.license                  = ''

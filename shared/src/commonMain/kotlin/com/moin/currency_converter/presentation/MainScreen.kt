@@ -26,12 +26,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.moin.currency_converter.StringtoBooleanStringPair
 import com.moin.currency_converter.data.ConvertedCurrency
 import com.moin.currency_converter.data.Currency
-import com.moin.currency_converter.data.CurrencyGridState
-import com.moin.currency_converter.data.CurrencyListState
-import com.moin.currency_converter.domain.CurrencyViewModel
 import com.moin.currency_converter.getFilteredCurrencyList
 import com.moin.currency_converter.style.Palette
 import kotlin.random.Random
@@ -40,10 +36,10 @@ import kotlin.random.Random
 @Composable
 internal fun MainScreen(viewModel: CurrencyViewModel) {
    val keyboardCtrlr = LocalSoftwareKeyboardController.current
-    val state by viewModel.state.collectAsState()
-    val gridState by viewModel.gridState.collectAsState()
+    val state by viewModel.cListState.collectAsState()
+    val gridState by viewModel.cGridState.collectAsState()
     var inputText by remember { mutableStateOf("") }
-    val pattern = remember { Regex("^(?:0|[1-9]\\d+|)?(?:.?\\d{0,2})?$") }
+    val pattern = remember { Regex("^\\d{0,7}(\\.\\d{0,2})?$") }
     val maxChar = 10
     var dropDownPair by remember { mutableStateOf(Pair(true, "")) }
 
@@ -53,21 +49,15 @@ internal fun MainScreen(viewModel: CurrencyViewModel) {
         modifier = Modifier.padding(16.dp)
     ) {
         TextField(
-            modifier = Modifier.height(60.dp).fillMaxSize(),
+            modifier = Modifier.height(60.dp).fillMaxWidth(),
             value = inputText,
             onValueChange = { if (it.matches(pattern) && it.length <= maxChar) inputText = it },
             label = { Text(text = "Input Amount") },
             placeholder = { Text(text = "#######.##") },
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions( keyboardType = KeyboardType.Decimal),
         )
-    }
 
-    Column(
-        modifier = Modifier.padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
         Spacer(modifier = Modifier.height(80.dp))
         when (val result = state) {
             is CurrencyListState.Error -> {
@@ -76,18 +66,23 @@ internal fun MainScreen(viewModel: CurrencyViewModel) {
 
             is CurrencyListState.Loading -> {
                 CircularProgressIndicator()
-
             }
 
             is CurrencyListState.Success -> {
                 Box(
                     modifier = Modifier.align(Alignment.End).width(150.dp)
                 ) {
-                    dropDownPair =
-                        StringtoBooleanStringPair(DropDown(result.currencies).toString())
-                    viewModel.getLatest(dropDownPair.second, inputText)
+                    DropDown(
+                        currencies = result.currencies,
+                        onSelection = {pair -> dropDownPair = pair}
+                        )
+                    LaunchedEffect(dropDownPair.second, inputText) {
+                        viewModel.getLatest(dropDownPair.second, inputText)
+                   }
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 when (val result = gridState) {
                     is CurrencyGridState.Error -> {
                         Text(text = "Error: ${result.message}")
@@ -117,25 +112,34 @@ internal fun MainScreen(viewModel: CurrencyViewModel) {
 }
 
 @Composable
-fun DropDown(result: List<Currency>): Pair<Boolean, String> {
-    val currencyListItems = result.map { it.code }
-    val expanded by remember { mutableStateOf(false) }
-    val selectedItem by remember { mutableStateOf(currencyListItems[0]) }
-    val (isExpanded, selectedCurrency) = DropDownView(
+fun DropDown(
+    currencies: List<Currency>,
+    onSelection: (Pair<Boolean, String>) -> Unit
+) {
+    val currencyListItems = currencies.map { it.code }
+    var expanded by remember { mutableStateOf(false) }
+    var selectedItem by remember { mutableStateOf(currencyListItems[0]) }
+
+    LaunchedEffect(Unit) {
+        onSelection(Pair(false, currencyListItems[0]))
+    }
+
+    DropDownView(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth()
-            .border(
-                width = 2.dp,
-                color = Palette.LightBlue,
-                shape = RoundedCornerShape(8.dp)
-            )
+            .border(width = 2.dp, color = Palette.LightBlue, shape = RoundedCornerShape(8.dp))
             .background(Palette.LightBlue, shape = RoundedCornerShape(8.dp)),
         expanded = expanded,
         listItems = currencyListItems,
-        selectedItem = selectedItem
+        selectedItem = selectedItem,
+        onItemSelected = { picked ->
+            selectedItem = picked
+            expanded = false
+            onSelection(Pair(false, picked))
+        }
     )
-    return Pair(isExpanded, selectedCurrency)
+
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -148,7 +152,7 @@ fun CurrencyTile(
     Box(
         modifier = Modifier.padding(5.dp).aspectRatio(1f).clip(RoundedCornerShape(5.dp))
             .background(clr)
-            .clickable { keyboardCtrlr!!.hide() },
+            .clickable { keyboardCtrlr?.hide() },
         contentAlignment = Alignment.Center,
     ) {
         Column(

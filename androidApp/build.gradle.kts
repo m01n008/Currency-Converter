@@ -7,11 +7,11 @@ plugins {
 
 android {
     namespace = "com.moin.currency_converter.android"
-    compileSdk = 33
+    compileSdk = 34
     defaultConfig {
         applicationId = "com.moin.currency_converter.android"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -34,9 +34,17 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
     testOptions{
         unitTests.isReturnDefaultValues = true
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {

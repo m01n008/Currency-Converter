@@ -15,28 +15,14 @@ val composeVersion = extra["compose.version"]
 
 kotlin {
     android()
+    jvmToolchain(17)
     iosX64()
     iosArm64()
     iosSimulatorArm64()
-    ios {
-        binaries {
-            framework {
-                // isStatic = true
-                baseName = "shared"
-
-            }
-        }
-    }
-
-
-
-
-
-
 
     cocoapods {
         summary = "Currency-Converter for Shared Module"
-        homepage = "https://github.com/d1lithium/Currency-Converter"
+        homepage = "https://github.com/m01n008/Currency-Converter"
         version = "1.0"
         ios.deploymentTarget = "14.1"
         podfile = project.file("../iosApp/Podfile")
@@ -67,13 +53,13 @@ kotlin {
                 implementation("com.squareup.sqldelight:runtime:1.5.5")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
-                implementation("pub.devrel:easypermissions:3.0.0")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-json:$ktorVersion")
             //    implementation("io.ktor:ktor-client-json-jvm:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization:$ktorVersion")
                 implementation("dev.tmapps:konnection:1.1.10")
-              //  implementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
+                api("androidx.lifecycle:lifecycle-viewmodel:2.8.0")
+                //  implementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
               //  implementation("com.github.ln-12:multiplatform-connectivity-status:1.2.0")
                 //   implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1")
 
@@ -133,7 +119,7 @@ kotlin {
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
 
-        val iosMain by getting {
+        val iosMain by creating {
             dependencies {
                 dependsOn(commonMain)
                 implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
@@ -168,10 +154,10 @@ sqldelight {
 
 android {
     namespace = "com.moin.currency_converter"
-    compileSdk = 33
+    compileSdk = 34
     defaultConfig {
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments.put("networkPermission", "true")
     }
@@ -183,8 +169,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     testOptions {
